@@ -1,19 +1,19 @@
-import React, { useState,useEffect  } from "react";
+import React, { useState, useEffect } from "react";
 import { Grid, TextField } from "@mui/material";
 import Cards from "react-credit-cards";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import "react-credit-cards/es/styles-compiled.css";
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import axios from "axios";
 
 const PaymentForms = () => {
-
   /* A hook that allows us to use the state of the component. */
   const [state, setState] = useState({
     number: "",
@@ -23,8 +23,10 @@ const PaymentForms = () => {
     focus: "",
   });
 
-  const [dataTable , setDataTable] = useState( []);
+  /* A hook that allows us to use the state of the component. */
+  const [dataTable, setDataTable] = useState([]);
 
+  /* A hook that allows us to use the state of the component. */
   const [isValidateNumber, setIsValidateNumber] = useState(true);
   const [isValidateCVV, setIsValidateCVV] = useState(true);
   const [isValidateDate, setIsValidateDate] = useState(true);
@@ -135,15 +137,42 @@ const PaymentForms = () => {
       number: state.number,
       name: state.name,
       expiry: state.expiry,
-    }
+    };
     const hideNumber = "XXXX XXXX XXXX " + information.number.slice(12, 16);
-    setDataTable([...dataTable, {number: hideNumber, name: information.name, expiry: information.expiry}]);
-    
+    setDataTable([
+      ...dataTable,
+      {
+        number: hideNumber,
+        name: information.name,
+        expiry: information.expiry,
+      },
+    ]);
+    sendData(...information, state.cvv);
   };
 
-  useEffect(() => {
-    console.log(dataTable);
-  },[dataTable]);
+  /* A hook that allows us to use the state of the component. */
+  useEffect(() => {}, [dataTable]);
+
+  const sendData = async (data) => {
+    try {
+      await axios.post(
+        "http://localhost:3001/api/customerCard",
+        {
+          cardNumber: data.cardNumber,
+          placeHolderName: data.placeHolderName,
+          expirationDate: data.expiry,
+          cvv: data.cvv,
+        },
+        {
+          headers: {
+            "content-type": "text/json",
+          },
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div>
@@ -258,7 +287,11 @@ const PaymentForms = () => {
           justifyContent="center"
           style={{ minHeight: "10vh" }}
         >
-          <Button variant="contained" onClick={submitInformation} endIcon={<SendIcon />}>
+          <Button
+            variant="contained"
+            onClick={submitInformation}
+            endIcon={<SendIcon />}
+          >
             Enviar
           </Button>
         </Grid>
@@ -271,7 +304,10 @@ const PaymentForms = () => {
           style={{ minHeight: "10vh" }}
         >
           <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <Table
+              sx={{ minWidth: 600, width: "100%" }}
+              aria-label="simple table"
+            >
               <TableHead>
                 <TableRow>
                   <TableCell>Número de Tarjeta</TableCell>
